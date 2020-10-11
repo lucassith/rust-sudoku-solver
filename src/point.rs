@@ -1,5 +1,6 @@
 use std::fmt::Debug;
 use std::cmp::PartialEq;
+use std::clone::Clone;
 
 #[derive(Debug, PartialEq)]
 pub enum Axis {
@@ -12,7 +13,7 @@ pub enum CoordinateError {
 }
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Point { pub x: usize, pub y: usize }
 
 impl PartialEq for Point {

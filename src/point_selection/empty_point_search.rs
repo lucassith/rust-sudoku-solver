@@ -1,10 +1,10 @@
 use crate::point::Point;
 use crate::Selectable;
 use crate::SquareTable;
-
 pub enum SearchDirection {
     TopLeftBottom,
     TopLeftRight,
+    BottomRightTop,
 }
 
 pub struct EmptyPointSearch {
@@ -26,6 +26,15 @@ impl EmptyPointSearch {
             SearchDirection::TopLeftRight => {
                 for y in 0..table.dimensions() {
                     for x in 0..table.dimensions() {
+                        if table.value_in_point(&Point{x: x, y: y}).unwrap() == 0 {
+                            return Option::Some(Point{x: x, y: y});
+                        }
+                    }
+                }
+            }
+            SearchDirection::BottomRightTop => {
+                for y in (0..table.dimensions()).rev() {
+                    for x in (0..table.dimensions()).rev() {
                         if table.value_in_point(&Point{x: x, y: y}).unwrap() == 0 {
                             return Option::Some(Point{x: x, y: y});
                         }

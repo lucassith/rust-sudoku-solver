@@ -44,7 +44,7 @@ mod test {
     use crate::point::Axis;
     
 
-    #[Test]
+    #[test]
     fn test_create() {
         let x = SimpleFiller{};
     }

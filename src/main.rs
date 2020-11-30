@@ -13,7 +13,7 @@ use std::thread;
 use std::time::{Instant};
 use crossbeam_channel::{bounded, unbounded, select};
 
-static NTHREADS: i32 = 8;
+static NTHREADS: i32 = 32;
 
 
 pub trait Selectable {
@@ -51,18 +51,18 @@ fn main() {
             loop {
                 let table: Table;
                 match select!(
-                    recv(rx_clone) -> table => Option::Some(table),
                     recv(rx_stop_clone) -> _ => Option::None,
+                    recv(rx_clone) -> table => Option::Some(table),
                 ) {
-                    Option::Some(x) => {
-                        table = x.unwrap();
-                    }
                     Option::None => {
                         return;
                     }
+                    Option::Some(x) => {
+                        table = x.unwrap();
+                    }
                 }
                 
-                let next_empty_point = point_search.next_empty(&table, SearchDirection::BottomRightTop);
+                let next_empty_point = point_search.next_empty(&table, SearchDirection::TopLeftRight);
                 match next_empty_point {
                     Option::None => {
                         tx_done_clone.send(table).unwrap();
@@ -86,15 +86,15 @@ fn main() {
     }
     let t = Table::new_from(
        [
+            [8,6,0,0,2,0,0,0,0],
+            [2,0,0,7,0,0,0,5,9],
+            [5,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,8,0,0],
+            [0,4,0,0,9,0,0,0,0],
+            [0,0,5,3,0,0,0,0,7],
             [0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,3,0,8,5],
-            [0,0,1,0,2,0,0,0,0],
-            [0,0,0,5,0,7,0,0,0],
-            [0,0,4,0,0,0,1,0,0],
-            [0,9,0,0,0,0,0,0,0],
-            [5,0,0,0,0,0,0,7,3],
-            [0,0,2,0,1,0,0,0,0],
-            [0,0,0,0,4,0,0,0,9],
+            [0,2,0,0,0,0,6,0,0],
+            [0,0,7,0,0,9,0,0,0]
         ]);
     println!("{:?}", t);
     let start = Instant::now();

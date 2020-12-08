@@ -9,11 +9,11 @@ use table::Table;
 use point_selection::empty_point_search::{EmptyPointSearch, SearchDirection};
 use point::Point;
 use point::CoordinateError;
-use std::thread;
+use std::{process::exit, thread};
 use std::time::{Instant};
 use crossbeam_channel::{bounded, unbounded, select};
 
-static NTHREADS: i32 = 32;
+static NTHREADS: i32 = 8;
 
 
 pub trait Selectable {
@@ -101,9 +101,7 @@ fn main() {
     tx.send(t).unwrap();
     println!("{:?}", rx_done.recv().unwrap());
     println!("Sudoku solved in: {:?}", start.elapsed());
-    for _ in handles {
-        tx_stop.send(true).unwrap();
-    }
+    exit(0)
 }
 
 

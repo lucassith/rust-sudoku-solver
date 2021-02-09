@@ -1,5 +1,4 @@
 use super::Filler;
-use crate::table::Table;
 use crate::point::Point;
 use crate::{SudokuTable, Selectable, Settable, SquareTable};
 use crate::validators::sequence_validator::SequenceValidator;
@@ -9,7 +8,7 @@ use crate::point_selection::line_point_selection::{SelectionType, LinePointSelec
 pub struct SimpleFiller {}
 
 impl Filler for SimpleFiller {
-    fn fill<T>(&self, table: &T, point: &Point) -> Option<Vec<T>> 
+    fn fill<T>(&self, table: &T, point: &Point) -> Option<Vec<T>>
         where T: Selectable + Settable + SudokuTable + SquareTable {
         let sequence_validator = SequenceValidator{};
         let line_point_selection = LinePointSelection{};
@@ -27,11 +26,11 @@ impl Filler for SimpleFiller {
         if common_possibilites.len() == 0 {
             return Option::None;
         }
-        let mut tableVec = Vec::<T>::with_capacity(common_possibilites.len());
+        let mut table_vec = Vec::<T>::with_capacity(common_possibilites.len());
         for v in common_possibilites {
-            tableVec.push(*table.set_in_point(point, *v).unwrap());
+            table_vec.push(*table.set_in_point(point, *v).unwrap());
         }
-        return Option::Some(tableVec);
+        return Option::Some(table_vec);
     }
 }
 
@@ -42,7 +41,7 @@ mod test {
     use crate::SquareTable;
     use crate::point::CoordinateError;
     use crate::point::Axis;
-    
+
 
     #[test]
     fn test_create() {

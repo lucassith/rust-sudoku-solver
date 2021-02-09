@@ -25,11 +25,11 @@ impl TableBus {
         self.tables.lock().unwrap().push_front(table)
     }
 
-    pub async fn receive(&self) -> Option<TableFuture> {
+    pub async fn receive(&self) -> Option<Table> {
         for _ in 0..10 {
             let t = self.tables.lock().unwrap().pop_front();
             if t.is_some() {
-                return Option::Some(TableFuture { table: t.unwrap() })
+                return t
             }
             sleep(Duration::from_millis(50))
         }
@@ -47,15 +47,11 @@ impl Clone for TableBus {
     }
 }
 
-pub struct TableFuture {
-    table: Table
-}
-
-impl Future for TableFuture {
+impl Future for Table {
     type Output = Table;
 
     fn poll(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Self::Output> {
-        Poll::Ready(self.table.clone())
+        Poll::Ready(self.clone())
     }
 }
 
@@ -76,7 +72,7 @@ mod test {
         let t2 = *t1.set_in_point(&Point{ x: 3, y: 6 }, 1).unwrap();
         tb.insert(t1);
         tb.insert(t2);
-        println!("{:?}", tb.receive().await.await);
-        println!("{:?}", tb.receive().await.await);
+        println!("{:?}", tb.receive().await.unwrap().await);
+        println!("{:?}", tb.receive().await.unwrap().await);
     }
 }

@@ -1,20 +1,22 @@
+use fillers::Filler;
+use fillers::simple_filler::SimpleFiller;
+use point::CoordinateError;
+use point::Point;
+use point_selection::empty_point_search::{EmptyPointSearch, SearchDirection};
+use table::Table;
+
+use crate::bus::table_bus::TableBus;
+use std::sync::{Arc, Mutex};
+use std::ops::Add;
+
 pub mod table;
 pub mod point;
 pub mod validators;
 pub mod fillers;
 pub mod point_selection;
-use fillers::simple_filler::SimpleFiller;
-use fillers::Filler;
-use table::Table;
-use point_selection::empty_point_search::{EmptyPointSearch, SearchDirection};
-use point::Point;
-use point::CoordinateError;
-use std::{process::exit, thread};
-use std::time::{Instant};
-use crossbeam_channel::{bounded, unbounded, select};
+pub mod bus;
 
-static NTHREADS: i32 = 8;
-
+static NTHREADS: i32 = 16;
 
 pub trait Selectable {
     fn value_in_point(&self, point: &Point) -> Result<u8, CoordinateError>;
@@ -33,40 +35,45 @@ pub trait SquareTable {
     fn dimensions(&self) -> usize;
 }
 
-fn main() {
-    let (tx, rx) = unbounded::<Table>();
-    let (tx_done, rx_done) = unbounded::<Table>();
-    let (tx_stop, rx_stop) = bounded::<bool>(1);
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut handles = vec![];
-
+    let table_bus = TableBus::new();
+    let solution_bus = TableBus::new();
+    let t = Table::new_from(
+        [
+            [0,0,9,2,1,8,0,0,0],
+            [1,7,0,0,9,6,8,0,0],
+            [0,4,0,0,5,0,0,0,6],
+            [4,5,1,0,6,0,3,7,0],
+            [0,0,0,0,0,5,0,0,9],
+            [9,0,2,3,7,0,5,0,0],
+            [6,0,0,5,0,1,0,0,0],
+            [0,0,0,0,4,9,2,5,7],
+            [0,9,4,8,0,0,0,1,3]
+        ]);
+    println!("{:?}", t);
+    table_bus.insert(t);
     for _ in 0..NTHREADS {
         let point_search = EmptyPointSearch{};
-        let rx_stop_clone = rx_stop.clone();
-        let rx_clone = rx.clone();
-        let tx_clone = tx.clone();
-        let tx_done_clone = tx_done.clone();
-        
-        
-        let handle = thread::spawn(move || {
+        let tb = table_bus.clone();
+        let sb = solution_bus.clone();
+        let handle = tokio::spawn(async move {
             loop {
-                let table: Table;
-                match select!(
-                    recv(rx_stop_clone) -> _ => Option::None,
-                    recv(rx_clone) -> table => Option::Some(table),
-                ) {
-                    Option::None => {
+                let table = match tb.receive().await {
+                    Some(future) => future.await,
+                    None => {
                         return;
                     }
-                    Option::Some(x) => {
-                        table = x.unwrap();
-                    }
+                };
+                if table.is_filled() {
+                    sb.insert(table);
+                    continue;
                 }
-                
-                let next_empty_point = point_search.next_empty(&table, SearchDirection::TopLeftRight);
+                let next_empty_point = point_search.next_empty(&table, SearchDirection::BottomRightTop);
                 match next_empty_point {
                     Option::None => {
-                        tx_done_clone.send(table).unwrap();
-                        return;
+                        continue;
                     }
                     _ => (),
                 }
@@ -74,34 +81,25 @@ fn main() {
                 let filler = SimpleFiller{};
                 let tables = filler.fill::<Table>(&table, &next_empty_point);
                 match tables {
-                    Option::Some(tableVec) => for t in tableVec {
-                        tx_clone.send(t).unwrap();
+                    Option::Some(table_vec) => for t in table_vec {
+                        tb.insert(t)
                     }
-                    Option::None => (),
+                    Option::None => continue,
                 }
-                
-            } 
+            }
         });
         handles.push(handle);
     }
-    let t = Table::new_from(
-       [
-            [8,6,0,0,2,0,0,0,0],
-            [2,0,0,7,0,0,0,5,9],
-            [5,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,8,0,0],
-            [0,4,0,0,9,0,0,0,0],
-            [0,0,5,3,0,0,0,0,7],
-            [0,0,0,0,0,0,0,0,0],
-            [0,2,0,0,0,0,6,0,0],
-            [0,0,7,0,0,9,0,0,0]
-        ]);
-    println!("{:?}", t);
-    let start = Instant::now();
-    tx.send(t).unwrap();
-    println!("{:?}", rx_done.recv().unwrap());
-    println!("Sudoku solved in: {:?}", start.elapsed());
-    exit(0)
+
+    for handle in handles {
+        handle.await?;
+    }
+    let count = solution_bus.count();
+    for _ in 0..solution_bus.count() {
+        println!("{:?}", solution_bus.receive().await.unwrap().await);
+    }
+    println!("There are {} solutions...", count);
+    return Result::Ok(())
 }
 
 

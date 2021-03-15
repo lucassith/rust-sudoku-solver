@@ -5,6 +5,7 @@ use std::fmt;
 
 pub const TABLE_SIZE: usize = 9;
 
+#[derive(Clone)]
 pub struct Table {
     fields: [[u8; TABLE_SIZE]; TABLE_SIZE]
 }
@@ -21,7 +22,7 @@ impl Table {
             fields: fields
         }
     }
-    
+
     pub fn is_filled(&self) -> bool {
         for x in 0..TABLE_SIZE {
             for y in 0..TABLE_SIZE {
@@ -89,8 +90,8 @@ impl fmt::Debug for Table {
         for i in 0..9 {
             row = &self.fields[i];
             writeln!(
-                f, 
-                "│ {} {} {} │ {} {} {} │ {} {} {} │", 
+                f,
+                "│ {} {} {} │ {} {} {} │ {} {} {} │",
                 val(row[0]), val(row[1]), val(row[2]), val(row[3]), val(row[4]), val(row[5]), val(row[6]), val(row[7]), val(row[8])
             ).ok();
             if (i + 1) % 3 == 0 && i != 8 {
@@ -136,14 +137,14 @@ mod test {
     fn test_accessing_value() {
         let t = Table::new();
         let val = t.value_in_point(&Point{ x: 1, y: 6}).unwrap();
-        
+
         assert_eq!(val, 0u8)
     }
 
     #[test]
     fn test_get_dimensions() {
         let t = Table::new();
-    
+
         assert_eq!(t.dimensions(), 9usize)
     }
 
@@ -159,7 +160,7 @@ mod test {
     fn test_y_axis_of_range_access() {
         let t = Table::new();
 
-        let y_error = t.value_in_point(&Point{ x: 1, y: 9 }).unwrap_err();    
+        let y_error = t.value_in_point(&Point{ x: 1, y: 9 }).unwrap_err();
         assert_eq!(y_error, CoordinateError::OutOfRange(Axis::Y));
     }
 
@@ -172,7 +173,7 @@ mod test {
         let new_table = t.set_in_point(&p, v).unwrap();
         assert_eq!(new_table.as_ref().value_in_point(&p).unwrap(), v);
 
-        let p2 = Point{x: 8, y: 3}; 
+        let p2 = Point{x: 8, y: 3};
         let v2 = 7u8;
         let new_table_2 = new_table.set_in_point(&p2, v2).unwrap();
         assert_eq!(new_table_2.as_ref().value_in_point(&p2).unwrap(), v2);

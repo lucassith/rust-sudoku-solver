@@ -8,7 +8,7 @@ pub enum SearchDirection {
 }
 
 pub struct EmptyPointSearch {
-    
+
 }
 
 impl EmptyPointSearch {
@@ -42,7 +42,6 @@ impl EmptyPointSearch {
                 }
             }
         }
-        
         return Option::None;
     }
 }
@@ -83,7 +82,7 @@ mod test {
 
     #[test]
     fn test_return_search_top_left_bottom() {
-        
+
         let t = MockTable{};
         let s = EmptyPointSearch{};
 
@@ -93,7 +92,7 @@ mod test {
 
     #[test]
     fn test_return_search_top_left_right() {
-        
+
         let t = MockTable{};
         let s = EmptyPointSearch{};
 

@@ -6,8 +6,9 @@ use point_selection::empty_point_search::{EmptyPointSearch, SearchDirection};
 use table::Table;
 
 use crate::bus::table_bus::TableBus;
-use std::sync::{Arc, Mutex};
-use std::ops::Add;
+use signal_hook::iterator::Signals;
+use signal_hook::consts::{SIGINT};
+use std::process;
 
 pub mod table;
 pub mod point;
@@ -54,6 +55,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         ]);
     println!("{:?}", t);
     table_bus.insert(t);
+
+    let mut signals = Signals::new(&[SIGINT]).unwrap();
+    let signal_solution_bus = solution_bus.clone();
+    let ctrlchandle = tokio::spawn(async move {
+        for _ in signals.forever() {
+            let count = signal_solution_bus.count();
+            for _ in 0..count {
+                println!("{:?}", signal_solution_bus.receive().await.unwrap().await);
+            }
+            println!("There are {} solutions...", count);
+            process::exit(0x1)
+        }
+    });
+
     for _ in 0..NTHREADS {
         let point_search = EmptyPointSearch{};
         let tb = table_bus.clone();
@@ -91,6 +106,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         handles.push(handle);
     }
 
+
+
     for handle in handles {
         handle.await?;
     }
@@ -99,7 +116,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("{:?}", solution_bus.receive().await.unwrap().await);
     }
     println!("There are {} solutions...", count);
-    return Result::Ok(())
+    ctrlchandle.abort();
+    process::exit(0)
 }
 
 

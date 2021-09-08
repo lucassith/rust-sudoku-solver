@@ -17,8 +17,8 @@ impl EmptyPointSearch {
             SearchDirection::TopLeftBottom => {
                 for x in 0..table.dimensions() {
                     for y in 0..table.dimensions() {
-                        if table.value_in_point(&Point{x: x, y: y}).unwrap() == 0 {
-                            return Option::Some(Point{x: x, y: y});
+                        if table.value_in_point(&Point{x, y}).unwrap() == 0 {
+                            return Option::Some(Point{x, y});
                         }
                     }
                 }
@@ -26,8 +26,8 @@ impl EmptyPointSearch {
             SearchDirection::TopLeftRight => {
                 for y in 0..table.dimensions() {
                     for x in 0..table.dimensions() {
-                        if table.value_in_point(&Point{x: x, y: y}).unwrap() == 0 {
-                            return Option::Some(Point{x: x, y: y});
+                        if table.value_in_point(&Point{x, y}).unwrap() == 0 {
+                            return Option::Some(Point{x, y});
                         }
                     }
                 }
@@ -35,8 +35,8 @@ impl EmptyPointSearch {
             SearchDirection::BottomRightTop => {
                 for y in (0..table.dimensions()).rev() {
                     for x in (0..table.dimensions()).rev() {
-                        if table.value_in_point(&Point{x: x, y: y}).unwrap() == 0 {
-                            return Option::Some(Point{x: x, y: y});
+                        if table.value_in_point(&Point{x, y}).unwrap() == 0 {
+                            return Option::Some(Point{x, y});
                         }
                     }
                 }

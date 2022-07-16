@@ -3,9 +3,7 @@ use crate::SudokuTable;
 use super::TableValidator;
 use crate::point::Point;
 
-pub struct SequenceValidator {
-
-}
+pub struct SequenceValidator {}
 
 impl TableValidator for SequenceValidator {
     fn get_possibilities(&self, table: &(impl Selectable + SudokuTable), point: Vec<&Point>) -> Vec<u8> {
@@ -32,17 +30,19 @@ mod test {
     use super::TableValidator;
     use crate::Settable;
     use crate::point::Point;
+
     #[test]
     fn test_should_return_valid_possibilities() {
         let mut t = Table::new();
-        t = *t.set_in_point(&Point{x: 1, y: 2}, 5).unwrap();
-        t = *t.set_in_point(&Point{x: 1, y: 3}, 6).unwrap();
+        t = *t.set_in_point(&Point { x: 1, y: 2 }, 5).unwrap();
+        t = *t.set_in_point(&Point { x: 1, y: 3 }, 6).unwrap();
 
-        let s = SequenceValidator{};
-        let mut point_vec = Vec::new();
-        point_vec.push(&Point{x: 1, y: 2});
-        point_vec.push(&Point{x: 1, y: 3});
-        point_vec.push(&Point{x: 1, y: 6});
+        let s = SequenceValidator {};
+        let point_vec = vec![
+            &Point { x: 1, y: 6 },
+            &Point { x: 1, y: 2 },
+            &Point { x: 1, y: 3 },
+        ];
         let possible_vales = s.get_possibilities(&t, point_vec);
         assert_eq!(possible_vales.len(), 7);
         assert_eq!(possible_vales[0], 1);

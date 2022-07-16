@@ -4,7 +4,7 @@ use crate::point::Axis;
 use crate::SquareTable;
 
 pub struct LinePointSelection {
-    
+
 }
 
 pub enum SelectionType {
@@ -33,7 +33,7 @@ impl LinePointSelection {
                 }
             }
         }
-        return Result::Ok(points);
+        Ok(points)
     }
 }
 
@@ -56,7 +56,7 @@ mod test {
     }
     #[test]
     fn test_return_horizontal_points() {
-        
+
         let t = MockTable{};
         let s = LinePointSelection{};
 
@@ -70,7 +70,7 @@ mod test {
 
     #[test]
     fn test_return_vertical_points() {
-        
+
         let t = MockTable{};
         let s = LinePointSelection{};
 
@@ -84,7 +84,7 @@ mod test {
 
     #[test]
     fn test_return_error_if_out_of_boundaries() {
-        
+
         let t = MockTable{};
         let s = LinePointSelection{};
 

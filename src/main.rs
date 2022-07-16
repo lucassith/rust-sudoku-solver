@@ -43,15 +43,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let solution_bus = TableBus::new();
     let t = Table::new_from(
         [
-            [0,0,9,2,1,8,0,0,0],
-            [1,7,0,0,9,6,8,0,0],
-            [0,4,0,0,5,0,0,0,6],
-            [4,5,1,0,6,0,3,7,0],
-            [0,0,0,0,0,5,0,0,9],
-            [9,0,2,3,7,0,5,0,0],
-            [6,0,0,5,0,1,0,0,0],
-            [0,0,0,0,4,9,2,5,7],
-            [0,9,4,8,0,0,0,1,3]
+            [1,0,0,0,0,7,0,9,0],
+            [0,3,0,0,2,0,0,0,8],
+            [0,0,9,6,0,0,5,0,0],
+            [0,0,5,3,0,0,9,0,0],
+            [0,1,0,0,8,0,0,0,2],
+            [6,0,0,0,0,4,0,0,0],
+            [3,0,0,0,0,0,0,1,0],
+            [0,4,0,0,0,0,0,0,7],
+            [0,0,7,0,0,0,3,0,0]
         ]);
     println!("{:?}", t);
     table_bus.insert(t);
@@ -86,27 +86,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     continue;
                 }
                 let next_empty_point = point_search.next_empty(&table, SearchDirection::BottomRightTop);
-                match next_empty_point {
-                    Option::None => {
-                        continue;
-                    }
-                    _ => (),
+                if next_empty_point == None {
+                    continue;
                 }
                 let next_empty_point = next_empty_point.unwrap();
                 let filler = SimpleFiller{};
                 let tables = filler.fill::<Table>(&table, &next_empty_point);
                 match tables {
-                    Option::Some(table_vec) => for t in table_vec {
+                    Some(table_vec) => for t in table_vec {
                         tb.insert(t)
                     }
-                    Option::None => continue,
+                    None => continue,
                 }
             }
         });
         handles.push(handle);
     }
-
-
 
     for handle in handles {
         handle.await?;

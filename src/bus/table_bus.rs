@@ -33,17 +33,13 @@ impl TableBus {
             }
             sleep(Duration::from_millis(50))
         }
-        return  Option::None
+        Option::None
     }
 }
 
 impl Clone for TableBus {
     fn clone(&self) -> Self {
         TableBus { tables: self.tables.clone() }
-    }
-
-    fn clone_from(&mut self, source: &Self) {
-        TableBus { tables: source.tables.clone() };
     }
 }
 
